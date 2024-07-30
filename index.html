@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fluety</title>
+  </head>
+
+  <body onload="onLoaded()">
+    <div class="container" style="width: 80%; margin: auto">
+      <h1>Fluety</h1>
+      <div class="main" style="display: grid; grid-template-columns: 50% 50%">
+        <section
+          id="left-panel"
+          style="
+            border: 1px solid #000;
+            border-radius: 0.5rem;
+            overflow-x: scroll;
+            padding: 1rem;
+          "
+        ></section>
+        <section
+          id="right-panel"
+          style="
+            border: 1px solid #000;
+            border-radius: 0.5rem;
+            overflow-x: scroll;
+            padding: 1rem;
+          "
+        ></section>
+      </div>
+    </div>
+
+    <script>
+      const onLoaded = () => {
+        function isValidJSON(str) {
+          try {
+            JSON.parse(str);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
+
+        let eventSource = new EventSource("http://localhost:8080/read");
+        const ids = [];
+
+        eventSource.onmessage = (event) => {
+          const jsonData = JSON.parse(event.data);
+          const id = jsonData["ID"];
+          const body = jsonData["Body"];
+
+          if (!ids.includes(id)) {
+            ids.push(id);
+          }
+
+          // left panelに表示する
+          if (id === ids[0]) {
+            const leftPanel = document.getElementById("left-panel");
+            const newPre = document.createElement("pre");
+            newPre.innerHTML = isValidJSON(body)
+              ? JSON.stringify(JSON.parse(body), null, 2)
+              : body;
+            leftPanel.appendChild(newPre);
+          }
+
+          // right panelに表示する
+          if (id === ids[1]) {
+            const rightPanel = document.getElementById("right-panel");
+            const newPre = document.createElement("pre");
+            newPre.innerHTML = isValidJSON(body)
+              ? JSON.stringify(JSON.parse(body), null, 2)
+              : body;
+            rightPanel.appendChild(newPre);
+          }
+        };
+      };
+    </script>
+  </body>
+</html>
