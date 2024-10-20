@@ -19,10 +19,7 @@ func NewSender() *Sender {
 }
 
 func (s *Sender) Send(text string) error {
-	record := Record{
-		Id:   s.Id,
-		Body: text,
-	}
+	record := Record{Body: text}
 	jsonData, err := json.Marshal(record)
 	if err != nil {
 		return err

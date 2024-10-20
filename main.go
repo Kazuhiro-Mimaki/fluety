@@ -2,18 +2,19 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 )
 
 func main() {
-	r := flag.Bool("r", false, "Receiver for centralized logging")
-	s := flag.Bool("s", false, "Sender to centralized logging")
-	flag.Parse()
+	var wg sync.WaitGroup
 
-	if *r {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// Initialize Receiver
 		receiver := NewReceiver()
 
 		fmt.Print("Start receiver")
@@ -21,10 +22,14 @@ func main() {
 		http.HandleFunc("/", receiver.Render())
 		http.HandleFunc("/register", receiver.Register())
 		http.HandleFunc("/read", receiver.Read())
-		http.ListenAndServe(":8080", nil)
-	}
 
-	if *s {
+		http.ListenAndServe(":8080", nil)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// Initialize Sender
 		sender := NewSender()
 
 		fmt.Printf("Start sender %v", sender.Id)
@@ -36,5 +41,7 @@ func main() {
 				panic(err)
 			}
 		}
-	}
+	}()
+
+	wg.Wait()
 }

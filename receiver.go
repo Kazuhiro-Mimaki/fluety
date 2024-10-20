@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-const MAX_SENDERS_COUNT = 2
-
 type Receiver struct {
 	records    []Record
 	registered map[string]*Sender
@@ -41,14 +39,6 @@ func (r *Receiver) Register() func(w http.ResponseWriter, req *http.Request) {
 		err := json.NewDecoder(req.Body).Decode(&record)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if _, ok := r.registered[record.Id]; !ok {
-			r.registered[record.Id] = NewSender()
-			return
-		}
-		if len(r.registered) > MAX_SENDERS_COUNT {
-			http.Error(w, "Max senders reached", http.StatusInternalServerError)
 			return
 		}
 		r.records = append(r.records, record)
