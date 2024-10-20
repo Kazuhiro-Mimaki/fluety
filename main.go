@@ -5,43 +5,22 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sync"
 )
 
 func main() {
-	var wg sync.WaitGroup
+	fmt.Print("Start fluety")
 
-	wg.Add(1)
+	receiver := NewReceiver()
+	template := NewTemplate()
+
 	go func() {
-		defer wg.Done()
-		// Initialize Receiver
-		receiver := NewReceiver()
-
-		fmt.Print("Start receiver")
-
-		http.HandleFunc("/", receiver.Render())
-		http.HandleFunc("/register", receiver.Register())
-		http.HandleFunc("/read", receiver.Read())
-
-		http.ListenAndServe(":8080", nil)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		// Initialize Sender
-		sender := NewSender()
-
-		fmt.Printf("Start sender %v", sender.Id)
-
 		in := bufio.NewScanner(os.Stdin)
 		for in.Scan() {
-			err := sender.Send(in.Text())
-			if err != nil {
-				panic(err)
-			}
+			receiver.Add(in.Text())
 		}
 	}()
 
-	wg.Wait()
+	http.HandleFunc("/", template.Render())
+	http.HandleFunc("/read", receiver.Read())
+	http.ListenAndServe(":8080", nil)
 }

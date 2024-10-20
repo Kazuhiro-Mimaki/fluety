@@ -3,46 +3,22 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 )
 
 type Receiver struct {
-	records    []Record
-	registered map[string]*Sender
+	records []Record
 }
 
 func NewReceiver() *Receiver {
 	return &Receiver{
-		records:    []Record{},
-		registered: map[string]*Sender{},
+		records: []Record{},
 	}
 }
 
-func (r *Receiver) Render() func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		template, err := template.ParseFiles("index.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if err := template.Execute(w, "no data needed"); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-}
-
-func (r *Receiver) Register() func(w http.ResponseWriter, req *http.Request) {
-	return func(w http.ResponseWriter, req *http.Request) {
-		var record Record
-		err := json.NewDecoder(req.Body).Decode(&record)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		r.records = append(r.records, record)
-	}
+func (r *Receiver) Add(text string) {
+	record := Record{Body: text}
+	r.records = append(r.records, record)
 }
 
 func (r *Receiver) Read() func(w http.ResponseWriter, req *http.Request) {
