@@ -8,43 +8,84 @@
   </head>
 
   <body onload="onLoaded()">
-    <div class="container" style="width: 80%; margin: auto">
+    <div
+      class="container"
+      style="width: 80%; margin: auto; display: flex; flex-direction: column"
+    >
       <h1>Fluety</h1>
-      <section
+
+      <input
+        id="search-field"
+        type="text"
+        placeholder="Search Keywords"
+        style="
+          border: 1px solid gray;
+          border-radius: 0.5rem;
+          padding: 1rem;
+          margin-bottom: 2rem;
+        "
+      />
+
+      <div
         id="panel"
         style="
-          border: 1px solid #000;
+          border: 1px solid gray;
           border-radius: 0.5rem;
           overflow-x: scroll;
           padding: 1rem;
         "
-      ></section>
+      ></div>
     </div>
 
     <script>
-      const onLoaded = () => {
-        function isValidJSON(str) {
-          try {
-            JSON.parse(str);
-            return true;
-          } catch (e) {
-            return false;
-          }
-        }
+      const data = {
+        records: [],
+      };
 
+      const panel = document.getElementById("panel");
+
+      function isValidJSON(str) {
+        try {
+          JSON.parse(str);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function parseJSON(body) {
+        return isValidJSON(body)
+          ? JSON.stringify(JSON.parse(body), null, 2)
+          : body;
+      }
+
+      const onLoaded = () => {
         let eventSource = new EventSource("http://localhost:8080/read");
         eventSource.onmessage = (event) => {
-          const jsonData = JSON.parse(event.data);
-          const body = jsonData["Body"];
+          const body = JSON.parse(event.data)["Body"];
+          data.records.push(body);
 
-          const panel = document.getElementById("panel");
           const newPre = document.createElement("pre");
-          newPre.innerHTML = isValidJSON(body)
-            ? JSON.stringify(JSON.parse(body), null, 2)
-            : body;
+          newPre.innerHTML = parseJSON(body);
           panel.appendChild(newPre);
         };
       };
+
+      const searchField = document.getElementById("search-field");
+      searchField.addEventListener("input", (e) => {
+        let records = data.records;
+        if (e.target.value !== "") {
+          records = data.records.filter((record) =>
+            record.includes(e.target.value)
+          );
+        }
+        panel.innerHTML = "";
+        records.forEach((record) => {
+          const newPre = document.createElement("pre");
+          newPre.innerHTML = parseJSON(record);
+          panel.appendChild(newPre);
+        });
+      });
     </script>
   </body>
 </html>
