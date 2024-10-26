@@ -60,7 +60,7 @@
       }
 
       const onLoaded = () => {
-        let eventSource = new EventSource("http://localhost:8080/read");
+        let eventSource = new EventSource("http://localhost:8080/sse");
         eventSource.onmessage = (event) => {
           const body = JSON.parse(event.data)["Body"];
           data.records.push(body);
