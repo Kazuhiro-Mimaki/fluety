@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 const CAPACITY = 100
@@ -37,7 +38,12 @@ func scanning(recorder *Recorder, r io.Reader) {
 }
 
 func renderTemplate(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("index.html")
+	exePath, err := getExeFilepath("index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl, err := template.ParseFiles(exePath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,6 +51,15 @@ func renderTemplate(w http.ResponseWriter, r *http.Request) {
 	if err := tmpl.Execute(w, nil); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func getExeFilepath(filename string) (string, error) {
+	exePath, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	exeDir := filepath.Dir(exePath)
+	return exeDir + "/" + filename, nil
 }
 
 func streamRead(recorder *Recorder) http.HandlerFunc {
