@@ -15,7 +15,9 @@ git clone https://github.com/Kazuhiro-Mimaki/fluety.git
 Assuming the application that is running with npm, please move to your app's directory and execute start command.
 
 ```
-npm run dev | {relative path to the fluety' build file}
+npm run dev | {relative path to the fluety's build file}
 ```
 
-For example, your app's path and fluety's path is same, "relative path to the fluety" is "../fluety/main".
+For example, your app's path and fluety's path is same, relative path to the fluety is `../fluety/main`.
+
+Let's access to http://localhost:8080
